@@ -120,7 +120,7 @@ T(n) = 2^n - 1
   
 ## Tower of Hanoi Graph
 
-![Tower of Hanoi Graph](images/tower_of_hanoi_graph.png)
+![Tower of Hanoi Graph](images/Tohanoi(2).png)
 ---
 
 # Program 5: Find Partition Point in a Binary Array
