@@ -117,7 +117,10 @@ T(n) = 2^n - 1
 
 ## Space Complexity
 - **O(n)**
+  
+## Tower of Hanoi Graph
 
+![Tower of Hanoi Graph](images/tower_of_hanoi_graph.png)
 ---
 
 # Program 5: Find Partition Point in a Binary Array
