@@ -84,7 +84,9 @@ Compare the number of comparisons performed by normal Bubble Sort and optimized 
 
 ## Space Complexity
 - **O(1)**
+## Performance Analysis
 
+![Bubble Sort Comparison Graph](images/bubble.png)
 ---
 
 # Program 4: Tower of Hanoi
