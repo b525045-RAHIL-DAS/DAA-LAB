@@ -1,78 +1,101 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int comparisons = 0;
-
-void findMaxMin(int A[], int low, int high, int *max, int *min)
-{
-    int max1, min1, max2, min2, mid;
-
-    // Only one element
-    if (low == high)
-    {
-        *max = A[low];
-        *min = A[low];
-        return;
-    }
-
-    // Two elements
-    if (high == low + 1)
-    {
-        comparisons++;
-
-        if (A[low] > A[high])
-        {
-            *max = A[low];
-            *min = A[high];
-        }
-        else
-        {
-            *max = A[high];
-            *min = A[low];
-        }
-
-        return;
-    }
-
-    // Divide
-    mid = (low + high) / 2;
-
-    // Conquer
-    findMaxMin(A, low, mid, &max1, &min1);
-    findMaxMin(A, mid + 1, high, &max2, &min2);
-
-    // Combine - find maximum
-    comparisons++;
-    if (max1 > max2)
-        *max = max1;
-    else
-        *max = max2;
-
-    // Combine - find minimum
-    comparisons++;
-    if (min1 < min2)
-        *min = min1;
-    else
-        *min = min2;
+void merge(int a[], int low, int mid, int high) {
+    int i = low, j = mid + 1, k = 0, temp[high - low + 1];
+    
+    while (i <= mid && j <= high)
+        temp[k++] = (a[i] < a[j]) ? a[i++] : a[j++];
+        
+    while (i <= mid) temp[k++] = a[i++];
+    while (j <= high) temp[k++] = a[j++];
+    
+    for (i = low, k = 0; i <= high; i++, k++) 
+        a[i] = temp[k];
 }
 
-int main()
-{
-    int n, max, min;
+void mergeSort(int a[], int low, int high) {
+    if (low < high) {
+        int mid = (low + high) / 2;
+        mergeSort(a, low, mid);
+        mergeSort(a, mid + 1, high);
+        merge(a, low, mid, high);
+    }
+}
+
+int binarySearch(int a[], int low, int high, int key) {
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (a[mid] == key) {
+            return 1;
+        }
+        if (a[mid] < key) low = mid + 1; else high = mid - 1;
+    }
+    return 0;
+}
+
+void findSum(int a[], int n, int k, int target, int start, int count, int sum, int selected[], int *found) {
+    if (count == k - 1) {
+        int req = target - sum;
+        if (binarySearch(a, start, n - 1, req)) {
+            printf(" ");
+            for (int i = 0; i < k - 1; i++) printf("%d + ", selected[i]);
+            printf("%d = %d\n", req, target);
+            *found = 1;
+        }
+        return;
+    }
+
+    for (int i = start; i < n; i++) {
+        selected[count] = a[i];
+        findSum(a, n, k, target, i + 1, count + 1, sum + a[i], selected, found);
+    }
+}
+
+int main() {
+    int n, k, T, found = 0;
 
     printf("Enter number of elements: ");
-    scanf("%d", &n);
+    if (scanf("%d", &n) != 1 || n <= 0) {
+        return 1;
+    }
 
-    int A[n];
+    int *S = malloc(n * sizeof(int));
+    if (!S) {
+        return 1;
+    }
 
-    printf("Enter elements:\n");
-    for (int i = 0; i < n; i++)
-        scanf("%d", &A[i]);
+    printf("Enter the elements:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &S[i]);
+    }
 
-    findMaxMin(A, 0, n - 1, &max, &min);
+    printf("Enter k: "); 
+    scanf("%d", &k);
+    
+    printf("Enter T: "); 
+    scanf("%d", &T);
 
-    printf("\nMaximum = %d\n", max);
-    printf("Minimum = %d\n", min);
-    printf("Number of comparisons = %d\n", comparisons);
+    if (k <= 0 || k > n) { 
+        free(S); 
+        return 1; 
+    }
+
+    int *selected = malloc(k * sizeof(int));
+    if (!selected) { 
+        free(S); 
+        return 1; 
+    }
+
+    mergeSort(S, 0, n - 1);
+
+    printf("\nGroups of %d elements whose sum is %d:\n", k, T);
+    findSum(S, n, k, T, 0, 0, 0, selected, &found);
+
+    if (!found) printf("No such group exists.\n");
+
+    free(S);
+    free(selected);
 
     return 0;
 }
