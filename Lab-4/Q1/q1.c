@@ -1,103 +1,77 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int binarySearch(int A[], int n, int x, int *count)
-{
-    int low = 0, high = n - 1;
+typedef struct {
+    int number;
+    char colour;
+} Item;
 
-    while (low <= high)
-    {
-        (*count)++;
-        int mid = low + (high - low) / 2;
+void sortByColour(Item items[], int n) {
+    Item *output = malloc(n * sizeof(Item));
 
-        if (A[mid] == x)
-            return mid;
+    int r = 0, b = 0, y = 0;
 
-        (*count)++;
-
-        if (x < A[mid])
-            high = mid - 1;
-        else
-            low = mid + 1;
+    for (int i = 0; i < n; i++) {
+        if (items[i].colour == 'R')
+            r++;
+        else if (items[i].colour == 'B')
+            b++;
+        else if (items[i].colour == 'Y')
+            y++;
     }
 
-    return -1;
-}
+    int p = 0;
 
-int ternarySearch(int A[], int n, int x, int *count)
-{
-    int low = 0, high = n - 1;
-
-    while (low <= high)
-    {
-        int mid1 = low + (high - low) / 3;
-        int mid2 = high - (high - low) / 3;
-
-        (*count)++;
-
-        if (A[mid1] == x)
-            return mid1;
-
-        (*count)++;
-
-        if (A[mid2] == x)
-            return mid2;
-
-        (*count)++;
-
-        if (x < A[mid1])
-            high = mid1 - 1;
-
-        else if (x > A[mid2])
-            low = mid2 + 1;
-
-        else
-        {
-            low = mid1 + 1;
-            high = mid2 - 1;
-        }
+    for (int i = 0; i < n; i++) {
+        if (items[i].colour == 'R')
+            output[p++] = items[i];
     }
 
-    return -1;
+    for (int i = 0; i < n; i++) {
+        if (items[i].colour == 'B')
+            output[p++] = items[i];
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (items[i].colour == 'Y')
+            output[p++] = items[i];
+    }
+
+    for (int i = 0; i < n; i++)
+        items[i] = output[i];
+
+    free(output);
 }
 
-int main()
-{
-    int A[100], n, x, i;
-    int bCount = 0, tCount = 0;
-    int bResult, tResult;
+void printItems(Item items[], int n) {
+    for (int i = 0; i < n; i++)
+        printf("(%d, %c) ", items[i].number, items[i].colour);
 
-    printf("Enter number of elements: ");
+    printf("\n");
+}
+
+int main() {
+    int n;
+
+    printf("Enter number of items: ");
     scanf("%d", &n);
 
-    printf("Enter sorted elements:\n");
-    for (i = 0; i < n; i++)
-        scanf("%d", &A[i]);
+    Item *items = malloc(n * sizeof(Item));
 
-    printf("Enter element to search: ");
-    scanf("%d", &x);
+    printf("Enter %d pairs (number colour):\n", n);
 
-    bResult = binarySearch(A, n, x, &bCount);
-    tResult = ternarySearch(A, n, x, &tCount);
+    for (int i = 0; i < n; i++)
+        scanf("%d %c", &items[i].number, &items[i].colour);
 
-    if (bResult != -1)
-        printf("\nBinary Search: Element found at index %d", bResult);
-    else
-        printf("\nBinary Search: Element not found");
+    printf("\nInput:\n");
+    printItems(items, n);
 
-    if (tResult != -1)
-        printf("\nTernary Search: Element found at index %d", tResult);
-    else
-        printf("\nTernary Search: Element not found");
+    sortByColour(items, n);
 
-    printf("\n\nBinary Search comparisons: %d", bCount);
-    printf("\nTernary Search comparisons: %d", tCount);
+    printf("\nOutput (R < B < Y):\n");
+    printItems(items, n);
 
-    if (bCount < tCount)
-        printf("\nBinary Search is better.");
-    else if (tCount < bCount)
-        printf("\nTernary Search is better.");
-    else
-        printf("\nBoth used the same number of comparisons.");
+    free(items);
 
     return 0;
 }
