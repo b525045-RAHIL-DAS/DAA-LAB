@@ -1,126 +1,110 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define MAX 100
+typedef struct {
+    int start;
+    int end;
+} Interval;
 
-void add(int A[MAX][MAX], int B[MAX][MAX],
-         int C[MAX][MAX], int n)
-{
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            C[i][j] = A[i][j] + B[i][j];
-}
-
-void sub(int A[MAX][MAX], int B[MAX][MAX],
-         int C[MAX][MAX], int n)
-{
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            C[i][j] = A[i][j] - B[i][j];
-}
-
-void multiply(int A[MAX][MAX], int B[MAX][MAX],
-              int C[MAX][MAX], int n)
-{
-    if(n == 1)
-    {
-        C[0][0] = A[0][0] * B[0][0];
-        return;
+void merge(Interval a[], int low, int mid, int high) {
+    int i = low, j = mid + 1, k = 0;
+    
+    Interval *temp = malloc((high - low + 1) * sizeof(Interval));
+    if (temp == NULL) {
+        fprintf(stderr, "Memory allocation failed in merge function.\n");
+        exit(1);
     }
 
-    int k = n / 2;
-
-    int A1[MAX][MAX], A2[MAX][MAX];
-    int B1[MAX][MAX], B2[MAX][MAX];
-
-    int S1[MAX][MAX], S2[MAX][MAX];
-    int S3[MAX][MAX], S4[MAX][MAX];
-
-    int P[MAX][MAX], Q[MAX][MAX];
-    int C1[MAX][MAX], C2[MAX][MAX];
-
-    // Extract the two different blocks
-    for(int i = 0; i < k; i++)
-    {
-        for(int j = 0; j < k; j++)
-        {
-            A1[i][j] = A[i][j];
-            A2[i][j] = A[i][j + k];
-
-            B1[i][j] = B[i][j];
-            B2[i][j] = B[i][j + k];
+    while (i <= mid && j <= high) {
+        if (a[i].start < a[j].start || (a[i].start == a[j].start && a[i].end <= a[j].end)) {
+            temp[k++] = a[i++];
+        } else {
+            temp[k++] = a[j++];
         }
     }
 
-    // S1 = A1 + A2
-    add(A1, A2, S1, k);
-
-    // S2 = B1 + B2
-    add(B1, B2, S2, k);
-
-    // S3 = A1 - A2
-    sub(A1, A2, S3, k);
-
-    // S4 = B1 - B2
-    sub(B1, B2, S4, k);
-
-    // Only TWO recursive multiplications
-    multiply(S1, S2, P, k);
-    multiply(S3, S4, Q, k);
-
-    // C1 = (P + Q) / 2
-    // C2 = (P - Q) / 2
-
-    for(int i = 0; i < k; i++)
-    {
-        for(int j = 0; j < k; j++)
-        {
-            C1[i][j] = (P[i][j] + Q[i][j]) / 2;
-            C2[i][j] = (P[i][j] - Q[i][j]) / 2;
-        }
+    while (i <= mid) {
+        temp[k++] = a[i++];
+    }
+    
+    while (j <= high) {
+        temp[k++] = a[j++];
     }
 
-    // Combine
-    for(int i = 0; i < k; i++)
-    {
-        for(int j = 0; j < k; j++)
-        {
-            C[i][j] = C1[i][j];
-            C[i][j + k] = C2[i][j];
-            C[i + k][j] = C2[i][j];
-            C[i + k][j + k] = C1[i][j];
-        }
+    for (i = low, k = 0; i <= high; i++, k++) {
+        a[i] = temp[k];
+    }
+    
+    free(temp);
+}
+
+void mergeSort(Interval a[], int low, int high) {
+    if (low < high) {
+        int mid = low + (high - low) / 2;
+        mergeSort(a, low, mid);
+        mergeSort(a, mid + 1, high);
+        merge(a, low, mid, high);
     }
 }
 
-int main()
-{
+int main() {
     int n;
-    int A[MAX][MAX], B[MAX][MAX], C[MAX][MAX];
 
-    printf("Enter n: ");
-    scanf("%d", &n);
-
-    printf("Enter Matrix A:\n");
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            scanf("%d", &A[i][j]);
-
-    printf("Enter Matrix B:\n");
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            scanf("%d", &B[i][j]);
-
-    multiply(A, B, C, n);
-
-    printf("\nResult:\n");
-
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
-            printf("%d ", C[i][j]);
-
-        printf("\n");
+    printf("Enter number of intervals: ");
+    if (scanf("%d", &n) != 1 || n <= 0) {
+        fprintf(stderr, "Invalid number of intervals.\n");
+        return 1;
     }
+
+    Interval *intervals = malloc(n * sizeof(Interval));
+    if (intervals == NULL) {
+        fprintf(stderr, "Memory allocation failed for intervals array.\n");
+        return 1;
+    }
+
+    printf("Enter the intervals (xi yi):\n");
+    for (int i = 0; i < n; i++) {
+        if (scanf("%d %d", &intervals[i].start, &intervals[i].end) != 2) {
+            fprintf(stderr, "Invalid input format.\n");
+            free(intervals);
+            return 1;
+        }
+    }
+
+    mergeSort(intervals, 0, n - 1);
+
+    Interval *merged = malloc(n * sizeof(Interval));
+    if (merged == NULL) {
+        fprintf(stderr, "Memory allocation failed for merged array.\n");
+        free(intervals);
+        return 1;
+    }
+
+    merged[0] = intervals[0];
+    int count = 1;
+
+    for (int i = 1; i < n; i++) {
+        if (intervals[i].start <= merged[count - 1].end) {
+            if (intervals[i].end > merged[count - 1].end) {
+                merged[count - 1].end = intervals[i].end;
+            }
+        } else {
+            merged[count] = intervals[i];
+            count++;
+        }
+    }
+
+    printf("Merged intervals:\n{");
+    for (int i = 0; i < count; i++) {
+        printf("(%d, %d)", merged[i].start, merged[i].end);
+        if (i < count - 1) {
+            printf(", ");
+        }
+    }
+    printf("}\n");
+
+    free(intervals);
+    free(merged);
 
     return 0;
 }
