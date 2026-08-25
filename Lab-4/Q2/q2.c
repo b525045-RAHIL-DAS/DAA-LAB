@@ -1,69 +1,97 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int findDefective(int coins[], int n, int genuine) {
+void merge(int a[], int low, int mid, int high) {
+    int i = low, j = mid + 1, k = 0;
+    int temp[high - low + 1];
 
-    // No coin left
-    if (n == 0)
-        return -1;
-
-    // One coin left
-    if (n == 1) {
-        if (coins[0] < genuine)
-            return coins[0];
+    while (i <= mid && j <= high) {
+        if (a[i] < a[j])
+            temp[k++] = a[i++];
         else
-            return -1;
+            temp[k++] = a[j++];
     }
 
-    int k = n / 2;
+    while (i <= mid)
+        temp[k++] = a[i++];
 
-    int leftWeight = 0, rightWeight = 0;
+    while (j <= high)
+        temp[k++] = a[j++];
 
-    // Calculate weights of two equal groups
-    for (int i = 0; i < k; i++) {
-        leftWeight += coins[i];
-        rightWeight += coins[k + i];
-    }
+    for (i = low, k = 0; i <= high; i++, k++)
+        a[i] = temp[k];
+}
 
-    // Left group is lighter
-    if (leftWeight < rightWeight) {
-        return findDefective(coins, k, genuine);
-    }
+void mergeSort(int a[], int low, int high) {
+    if (low < high) {
+        int mid = (low + high) / 2;
 
-    // Right group is lighter
-    else if (rightWeight < leftWeight) {
-        return findDefective(coins + k, k, genuine);
-    }
-
-    // Both groups have equal weight
-    else {
-        // If n is even, every coin has been checked
-        if (n % 2 == 0)
-            return -1;
-
-        // One coin remains unweighed
-        int remaining = coins[2 * k];
-
-        if (remaining < genuine)
-            return remaining;
-        else
-            return -1;
+        mergeSort(a, low, mid);
+        mergeSort(a, mid + 1, high);
+        merge(a, low, mid, high);
     }
 }
 
+int binarySearch(int a[], int n, int key) {
+    int low = 0, high = n - 1;
+
+    while (low <= high) {
+        int mid = (low + high) / 2;
+
+        if (a[mid] == key)
+            return 1;
+        else if (a[mid] < key)
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+
+    return 0;
+}
+
 int main() {
+    int n, x, found = 0;
 
-    int coins[] = {10, 10, 10, 10, 9, 10, 10};
-    int n = 7;
+    printf("Enter size of each set: ");
+    scanf("%d", &n);
 
-    // Required weight of a genuine coin
-    int genuine = 10;
+    int *S1 = malloc(n * sizeof(int));
+    int *S2 = malloc(n * sizeof(int));
 
-    int defective = findDefective(coins, n, genuine);
+    if (S1 == NULL || S2 == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
 
-    if (defective == -1)
-        printf("No defective coin found.\n");
-    else
-        printf("Defective coin found with weight: %d\n", defective);
+    printf("Enter elements of S1:\n");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &S1[i]);
+
+    printf("Enter elements of S2:\n");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &S2[i]);
+
+    printf("Enter x: ");
+    scanf("%d", &x);
+
+    mergeSort(S2, 0, n - 1);
+
+    printf("\nPairs whose sum is %d:\n", x);
+
+    for (int i = 0; i < n; i++) {
+        int required = x - S1[i];
+
+        if (binarySearch(S2, n, required)) {
+            printf("%d + %d = %d\n", S1[i], required, x);
+            found = 1;
+        }
+    }
+
+    if (!found)
+        printf("No such pair exists.\n");
+
+    free(S1);
+    free(S2);
 
     return 0;
 }
